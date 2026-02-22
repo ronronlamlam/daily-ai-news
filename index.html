@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日AI热点新闻 | Daily AI News</title>
+    <meta name="description" content="每日更新全球AI热点新闻，涵盖大模型发布、技术突破、行业动态、投资资讯">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e8e8e8;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+        }
+        .date-badge {
+            display: inline-block;
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #00d4ff;
+        }
+        .category {
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border-left: 4px solid;
+        }
+        .category.models { border-color: #00d4ff; }
+        .category.investment { border-color: #ffd700; }
+        .category.industry { border-color: #7b2cbf; }
+        .category.opinion { border-color: #ff6b6b; }
+        .category h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .category.models h2 { color: #00d4ff; }
+        .category.investment h2 { color: #ffd700; }
+        .category.industry h2 { color: #a855f7; }
+        .category.opinion h2 { color: #ff6b6b; }
+        .news-list {
+            list-style: none;
+        }
+        .news-item {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        .news-item a {
+            color: #e8e8e8;
+            text-decoration: none;
+            display: block;
+            transition: color 0.2s;
+        }
+        .news-item a:hover {
+            color: #00d4ff;
+        }
+        .news-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .news-source {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+        }
+        .rss-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #ff9500;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .category { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 每日AI热点新闻</h1>
+            <p class="subtitle">Daily AI News Digest</p>
+            <div class="date-badge" id="current-date">2026年2月22日</div>
+        </header>
+
+        <main id="news-content">
+            <!-- 新闻内容将由脚本动态插入 -->
+            <div class="category models">
+                <h2>🚀 大模型/AI产品发布</h2>
+                <ul class="news-list" id="models-list">
+                    <li class="news-item">加载中...</li>
+                </ul>
+            </div>
+
+            <div class="category investment">
+                <h2>💰 投资/公司新闻</h2>
+                <ul class="news-list" id="investment-list">
+                    <li class="news-item">加载中...</li>
+                </ul>
+            </div>
+
+            <div class="category industry">
+                <h2>🌐 行业动态</h2>
+                <ul class="news-list" id="industry-list">
+                    <li class="news-item">加载中...</li>
+                </ul>
+            </div>
+
+            <div class="category opinion">
+                <h2>⚠️ 观点/趋势</h2>
+                <ul class="news-list" id="opinion-list">
+                    <li class="news-item">加载中...</li>
+                </ul>
+            </div>
+        </main>
+
+        <footer>
+            <p>每日更新 · 自动抓取全球AI资讯</p>
+            <p>Last updated: <span id="update-time">--</span></p>
+            <a href="/rss.xml" class="rss-link">📡 RSS Feed</a>
+        </footer>
+    </div>
+
+    <script>
+        // 设置当前日期
+        const today = new Date();
+        document.getElementById('current-date').textContent = 
+            `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+        document.getElementById('update-time').textContent = today.toLocaleString('zh-CN');
+    </script>
+</body>
+</html>
