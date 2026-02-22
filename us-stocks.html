@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美股分析 | Kimi Claw 是好東西</title>
+    <meta name="description" content="美股ETF與個股分析，包括QQQ、M7科技巨頭等">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e8e8e8;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+        }
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            color: #888;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .nav a:hover, .nav a.active {
+            color: #00d4ff;
+            border-color: #00d4ff;
+            background: rgba(0,212,255,0.1);
+        }
+        .section {
+            margin: 40px 0;
+            padding: 30px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border-left: 4px solid #00d4ff;
+        }
+        .section h2 {
+            font-size: 1.5rem;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stock-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .stock-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .stock-ticker {
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .stock-price {
+            font-size: 1.5rem;
+            color: #00d4ff;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .data-table th {
+            color: #888;
+            font-weight: normal;
+        }
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        @media (max-width: 700px) {
+            .pros-cons { grid-template-columns: 1fr; }
+        }
+        .pros, .cons {
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .pros {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        .cons {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        .pros h4 {
+            color: #4caf50;
+            margin-bottom: 15px;
+        }
+        .cons h4 {
+            color: #f44336;
+            margin-bottom: 15px;
+        }
+        .pros ul, .cons ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .pros li, .cons li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .pros li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+        }
+        .cons li::before {
+            content: "⚠";
+            position: absolute;
+            left: 0;
+            color: #f44336;
+        }
+        .target-price {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .price-box {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .price-box .label {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        .price-box .value {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .price-box.current { border: 1px solid #00d4ff; }
+        .price-box.target { border: 1px solid #4caf50; }
+        .price-box.support { border: 1px solid #ffc107; }
+        .m7-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .m7-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .m7-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-2px);
+        }
+        .m7-card h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        .m7-card .ticker {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+        }
+        .highlight { color: #ffc107; font-weight: bold; }
+        .disclaimer {
+            background: rgba(255,193,7,0.1);
+            border: 1px solid rgba(255,193,7,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📈 美股分析</h1>
+            <p class="subtitle">US Stock Analysis & Insights</p>
+        </header>
+
+        <nav class="nav">
+            <a href="index.html">🏠 首頁</a>
+            <a href="us-stocks.html" class="active">📈 美股</a>
+            <a href="crypto.html">₿ 加密貨幣</a>
+        </nav>
+
+        <!-- QQQ 分析 -->
+        <section class="section">
+            <h2>🎯 QQQ (Invesco QQQ Trust)</h2>
+            
+            <div class="stock-card">
+                <div class="stock-header">
+                    <div>
+                        <div class="stock-name">納斯達克100 ETF</div>
+                        <div class="stock-ticker">QQQ</div>
+                    </div>
+                    <div class="stock-price">$608.81</div>
+                </div>
+
+                <table class="data-table">
+                    <tr>
+                        <th>追蹤指數</th>
+                        <td>納斯達克100指數 (NASDAQ-100)</td>
+                        <th>成立日期</th>
+                        <td>1999年3月10日</td>
+                    </tr>
+                    <tr>
+                        <th>管理費</th>
+                        <td><span class="highlight">0.18%</span> (2025年12月起下調)</td>
+                        <th>資產規模</th>
+                        <td>約 $4,118億美元</td>
+                    </tr>
+                    <tr>
+                        <th>成分股數</th>
+                        <td>100家非金融公司</td>
+                        <th>股息率</th>
+                        <td>約 0.46%</td>
+                    </tr>
+                    <tr>
+                        <th>52週高低</th>
+                        <td>$402.39 - $637.01</td>
+                        <th>更新日期</th>
+                        <td>2026年2月21日</td>
+                    </tr>
+                </table>
+
+                <h4 style="margin: 20px 0 10px; color: #888;">前10大持股</h4>
+                <table class="data-table">
+                    <tr>
+                        <th>排名</th>
+                        <th>公司</th>
+                        <th>代碼</th>
+                        <th>權重</th>
+                    </tr>
+                    <tr><td>1</td><td>NVIDIA</td><td>NVDA</td><td>8.75%</td></tr>
+                    <tr><td>2</td><td>Apple</td><td>AAPL</td><td>7.44%</td></tr>
+                    <tr><td>3</td><td>Microsoft</td><td>MSFT</td><td>5.87%</td></tr>
+                    <tr><td>4</td><td>Amazon</td><td>AMZN</td><td>4.18%</td></tr>
+                    <tr><td>5</td><td>Tesla</td><td>TSLA</td><td>4.10%</td></tr>
+                    <tr><td>6</td><td>Meta Platforms</td><td>META</td><td>3.70%</td></tr>
+                    <tr><td>7</td><td>Walmart</td><td>WMT</td><td>3.56%</td></tr>
+                    <tr><td>8</td><td>Alphabet (A股)</td><td>GOOGL</td><td>3.50%</td></tr>
+                    <tr><td>9</td><td>Alphabet (C股)</td><td>GOOG</td><td>3.26%</td></tr>
+                    <tr><td>10</td><td>Broadcom</td><td>AVGO</td><td>3.02%</td></tr>
+                </table>
+            </div>
+
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>✅ 10大賣點</h4>
+                    <ul>
+                        <li>科技巨頭集中 — 一鍵持有美股7大科技巨頭</li>
+                        <li>長期績效優異 — 年化報酬約12-15%，跑贏標普500</li>
+                        <li>AI浪潮受惠 — 半導體、雲端、AI軟體完整布局</li>
+                        <li>流動性極佳 — 全球交易量最大ETF之一</li>
+                        <li>費用下調 — 管理費降至0.18%</li>
+                        <li>結構改革 — 轉為開放式ETF，可再投資股息</li>
+                        <li>產業純度高 — 排除金融股，專注成長型產業</li>
+                        <li>持續調整 — 每年審查成分股，納入新興龍頭</li>
+                        <li>避險工具豐富 — 選擇權市場活躍</li>
+                        <li>稅務效率 — 開放式結構稅務處理更靈活</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>⚠️ 5大隱憂</h4>
+                    <ul>
+                        <li>集中度風險 — 前10大持股佔比超過45%</li>
+                        <li>估值偏高 — 科技股本益比普遍高於大盤</li>
+                        <li>利率敏感 — 成長股對利率變動敏感</li>
+                        <li>AI投資回報疑慮 — 市場質疑AI資本開支能否轉化為盈利</li>
+                        <li>勞動市場轉弱 — 美國失業率升至4.6%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h4 style="margin: 20px 0 10px; color: #888;">價格分析</h4>
+            <div class="target-price">
+                <div class="price-box current">
+                    <div class="label">現價</div>
+                    <div class="value" style="color: #00d4ff;">$608.81</div>
+                </div>
+                <div class="price-box target">
+                    <div class="label">分析師目標價</div>
+                    <div class="value" style="color: #4caf50;">$604.80</div>
+                </div>
+                <div class="price-box support">
+                    <div class="label">52週高點</div>
+                    <div class="value" style="color: #ffc107;">$637.01</div>
+                </div>
+                <div class="price-box">
+                    <div class="label">52週低點</div>
+                    <div class="value">$402.39</div>
+                </div>
+                <div class="price-box">
+                    <div class="label">建議買入區間</div>
+                    <div class="value">$550-580</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- M7 概覽 -->
+        <section class="section">
+            <h2>🌟 Magnificent 7 (M7) 科技巨頭</h2>
+            <p style="margin-bottom: 20px; color: #888;">QQQ的核心持倉，主宰全球科技產業的七大巨頭</p>
+            
+            <div class="m7-grid">
+                <div class="m7-card">
+                    <h3>🍎 Apple</h3>
+                    <div class="ticker">AAPL | 消費電子/軟體服務</div>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">全球市值最大公司，iPhone、Mac、服務業務為主要收入來源</p>
+                    <a href="#aapl" style="color: #00d4ff; font-size: 0.9rem;">查看詳細分析 →</a>
+                </div>
+                <div class="m7-card">
+                    <h3>💻 Microsoft</h3>
+                    <div class="ticker">MSFT | 雲端運算/軟體</div>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">Azure雲端領導者，Office 365、AI Copilot驅動增長</p>
+                    <a href="#msft" style="color: #00d4ff; font-size: 0.9rem;">查看詳細分析 →</a>
+                </div>
+                <div class="m7-card">
+                    <h3>🎮 NVIDIA</h3>
+                    <div class="ticker">NVDA | AI晶片/資料中心</div>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">AI革命最大受益者，GPU市場絕對霸主</p>
+                    <a href="#nvda" style="color: #00d4ff; font-size: 0.9rem;">查看詳細分析 →</a>
+                </div>
+                <div class="m7-card">
+                    <h3>📦 Amazon</h3>
+                    <div class="ticker">AMZN | 電商/雲端運算</div>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">AWS雲端服務+電商雙引擎，AI助理Alexa升級</p>
+                    <a href="#amzn" style="color: #00d4ff; font-size: 0.9rem;">查看詳細分析 →</a>
+                </div>
+                <div class="m7-card">
+                    <h3>🔍 Alphabet</h3>
+                    <div class="ticker">GOOGL | 搜尋/AI/雲端</div>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">Google搜尋霸主，Gemini AI與YouTube廣告增長</p>
+                    <a href="#googl" style="color: #00d4ff; font-size: 0.9rem;">查看詳細分析 →</a>
+                </div>
+                <div class="m7-card">
+                    <h3>📱 Meta</h3>
+                    <div class="ticker">META | 社交媒體/元宇宙</div>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">Facebook、Instagram、WhatsApp，AI推薦算法驅動</p>
+                    <a href="#meta" style="color: #00d4ff; font-size: 0.9rem;">查看詳細分析 →</a>
+                </div>
+                <div class="m7-card">
+                    <h3>🚗 Tesla</h3>
+                    <div class="ticker">TSLA | 電動車/能源</div>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">電動車先驅，自動駕駛與機器人業務前景</p>
+                    <a href="#tsla" style="color: #00d4ff; font-size: 0.9rem;">查看詳細分析 →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- M7 詳細分析 -->
+        <section class="section" id="aapl">
+            <h2>🍎 Apple (AAPL)</h2>
+            <div class="stock-card">
+                <div class="stock-header">
+                    <div>
+                        <div class="stock-name">蘋果公司</div>
+                        <div class="stock-ticker">AAPL</div>
+                    </div>
+                    <div class="stock-price">~$224</div>
+                </div>
+                <table class="data-table">
+                    <tr><th>業務</th><td>消費電子 (iPhone, Mac, iPad, 服務)</td><th>市值</th><td>~$3.4萬億</td></tr>
+                    <tr><th>本益比</th><td>~32倍</td><th>股息率</th><td>~0.5%</td></tr>
+                </table>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>✅ 賣點</h4>
+                        <ul>
+                            <li>品牌護城河深厚，用戶黏著度極高</li>
+                            <li>服務業務增長穩定 (App Store, iCloud)</li>
+                            <li>現金流充沛，持續回購股票</li>
+                            <li>AI功能 (Apple Intelligence) 推動換機潮</li>
+                            <li>生態系統閉環，用戶轉換成本高</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>⚠️ 隱憂</h4>
+                        <ul>
+                            <li>iPhone銷售放緩，中國市場競爭激烈</li>
+                            <li>估值偏高，本益比高於歷史平均</li>
+                            <li>監管壓力 (App Store壟斷爭議)</li>
+                            <li>缺乏突破性創新產品</li>
+                            <li>地緣政治風險 (中國供應鏈)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="target-price">
+                    <div class="price-box current"><div class="label">現價</div><div class="value" style="color:#00d4ff">$224</div></div>
+                    <div class="price-box target"><div class="label">分析師目標價</div><div class="value" style="color:#4caf50">$292</div></div>
+                    <div class="price-box"><div class="label">Morningstar公允價</div><div class="value">$240</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="msft">
+            <h2>💻 Microsoft (MSFT)</h2>
+            <div class="stock-card">
+                <div class="stock-header">
+                    <div>
+                        <div class="stock-name">微軟</div>
+                        <div class="stock-ticker">MSFT</div>
+                    </div>
+                    <div class="stock-price">~$480</div>
+                </div>
+                <table class="data-table">
+                    <tr><th>業務</th><td>雲端運算 (Azure)、軟體、AI</td><th>市值</th><td>~$3.6萬億</td></tr>
+                    <tr><th>本益比</th><td>~33倍</td><th>股息率</th><td>~0.7%</td></tr>
+                </table>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>✅ 賣點</h4>
+                        <ul>
+                            <li>Azure雲端市佔率第二，持續增長</li>
+                            <li>AI領域領先 (OpenAI合作、Copilot)</li>
+                            <li>Office 365訂閱模式穩定</li>
+                            <li>企業客戶黏著度高</li>
+                            <li>多元化收入來源</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>⚠️ 隱憂</h4>
+                        <ul>
+                            <li>雲端增長放緩，競爭加劇</li>
+                            <li>AI投資回報尚未明確</li>
+                            <li>估值處於歷史高位</li>
+                            <li>監管風險 (反壟斷)</li>
+                            <li>經濟衰退影響企業IT支出</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="target-price">
+                    <div class="price-box current"><div class="label">現價</div><div class="value" style="color:#00d4ff">$480</div></div>
+                    <div class="price-box target"><div class="label">分析師平均目標價</div><div class="value" style="color:#4caf50">$592</div></div>
+                    <div class="price-box"><div class="label">最高目標價</div><div class="value">$730</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="nvda">
+            <h2>🎮 NVIDIA (NVDA)</h2>
+            <div class="stock-card">
+                <div class="stock-header">
+                    <div>
+                        <div class="stock-name">輝達</div>
+                        <div class="stock-ticker">NVDA</div>
+                    </div>
+                    <div class="stock-price">~$140</div>
+                </div>
+                <table class="data-table">
+                    <tr><th>業務</th><td>AI晶片、資料中心GPU、遊戲顯卡</td><th>市值</th><td>~$3.4萬億</td></tr>
+                    <tr><th>本益比</th><td>~55倍</td><th>股息率</th><td>~0.03%</td></tr>
+                </table>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>✅ 賣點</h4>
+                        <ul>
+                            <li>AI晶片市場絕對霸主 (>80%市佔率)</li>
+                            <li>資料中心需求持續爆發</li>
+                            <li>技術領先優勢明顯 (CUDA生態)</li>
+                            <li>新產品週期 (Blackwell架構)</li>
+                            <li>軟體服務收入增長</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>⚠️ 隱憂</h4>
+                        <ul>
+                            <li>估值極高，本益比超過50倍</li>
+                            <li>客戶集中度風險 (微軟、Google、Meta)</li>
+                            <li>競爭加劇 (AMD、Intel、自研晶片)</li>
+                            <li>地緣政治風險 (中國出口限制)</li>
+                            <li>AI泡沫破裂風險</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="target-price">
+                    <div class="price-box current"><div class="label">現價</div><div class="value" style="color:#00d4ff">$140</div></div>
+                    <div class="price-box target"><div class="label">分析師平均目標價</div><div class="value" style="color:#4caf50">$257</div></div>
+                    <div class="price-box"><div class="label">預測區間</div><div class="value">$185-289</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="amzn">
+            <h2>📦 Amazon (AMZN)</h2>
+            <div class="stock-card">
+                <div class="stock-header">
+                    <div>
+                        <div class="stock-name">亞馬遜</div>
+                        <div class="stock-ticker">AMZN</div>
+                    </div>
+                    <div class="stock-price">~$230</div>
+                </div>
+                <table class="data-table">
+                    <tr><th>業務</th><td>電商、AWS雲端、廣告、物流</td><th>市值</th><td>~$2.4萬億</td></tr>
+                    <tr><th>本益比</th><td>~38倍</td><th>股息率</th><td>無</td></tr>
+                </table>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>✅ 賣點</h4>
+                        <ul>
+                            <li>AWS雲端市場領導者</li>
+                            <li>電商龍頭地位穩固</li>
+                            <li>廣告業務高速增長</li>
+                            <li>物流網絡優勢</li>
+                            <li>AI助理 (Alexa) 升級潛力</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>⚠️ 隱憂</h4>
+                        <ul>
+                            <li>電商增長放緩</li>
+                            <li>監管壓力 (反壟斷)</li>
+                            <li>勞工成本上升</li>
+                            <li>雲端競爭加劇</li>
+                            <li>利潤率較低</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="target-price">
+                    <div class="price-box current"><div class="label">現價</div><div class="value" style="color:#00d4ff">$230</div></div>
+                    <div class="price-box target"><div class="label">分析師平均目標價</div><div class="value" style="color:#4caf50">$282</div></div>
+                    <div class="price-box"><div class="label">最高目標價</div><div class="value">$360</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="googl">
+            <h2>🔍 Alphabet (GOOGL)</h2>
+            <div class="stock-card">
+                <div class="stock-header">
+                    <div>
+                        <div class="stock-name">Alphabet</div>
+                        <div class="stock-ticker">GOOGL</div>
+                    </div>
+                    <div class="stock-price">~$185</div>
+                </div>
+                <table class="data-table">
+                    <tr><th>業務</th><td>搜尋引擎、YouTube、雲端、AI</td><th>市值</th><td>~$2.3萬億</td></tr>
+                    <tr><th>本益比</th><td>~22倍</td><th>股息率</th><td>~0.5%</td></tr>
+                </table>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>✅ 賣點</h4>
+                        <ul>
+                            <li>搜尋引擎壟斷地位 (90%+市佔率)</li>
+                            <li>YouTube廣告收入穩定</li>
+                            <li>AI技術 (Gemini) 追趕中</li>
+                            <li>雲端業務增長</li>
+                            <li>估值相對合理 (本益比22倍)</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>⚠️ 隱憂</h4>
+                        <ul>
+                            <li>反壟斷訴訟風險 (可能被拆分)</li>
+                            <li>AI搜尋可能影響廣告收入</li>
+                            <li>資本支出大幅增加 ($175-185B)</li>
+                            <li>監管壓力持續</li>
+                            <li>與OpenAI/Microsoft競爭</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="target-price">
+                    <div class="price-box current"><div class="label">現價</div><div class="value" style="color:#00d4ff">$185</div></div>
+                    <div class="price-box target"><div class="label">分析師平均目標價</div><div class="value" style="color:#4caf50">$366</div></div>
+                    <div class="price-box"><div class="label">最高目標價</div><div class="value">$420</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="meta">
+            <h2>📱 Meta Platforms (META)</h2>
+            <div class="stock-card">
+                <div class="stock-header">
+                    <div>
+                        <div class="stock-name">Meta</div>
+                        <div class="stock-ticker">META</div>
+                    </div>
+                    <div class="stock-price">~$720</div>
+                </div>
+                <table class="data-table">
+                    <tr><th>業務</th><td>社交媒體 (FB, IG, WA)、元宇宙、AI</td><th>市值</th><td>~$1.8萬億</td></tr>
+                    <tr><th>本益比</th><td>~25倍</td><th>股息率</th><td>~0.4%</td></tr>
+                </table>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>✅ 賣點</h4>
+                        <ul>
+                            <li>社交媒體用戶基數龐大 (30億+)</li>
+                            <li>AI推薦算法提升廣告效率</li>
+                            <li>Reels短視頻增長強勁</li>
+                            <li>成本削減見效 (效率年)</li>
+                            <li>AI眼鏡 (Ray-Ban) 潛力</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>⚠️ 隱憂</h4>
+                        <ul>
+                            <li>元宇宙投資虧損持續 (Reality Labs)</li>
+                            <li>年輕用戶流失至TikTok</li>
+                            <li>監管風險 (數據隱私)</li>
+                            <li>廣告收入受經濟影響</li>
+                            <li>AI投資回報不確定</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="target-price">
+                    <div class="price-box current"><div class="label">現價</div><div class="value" style="color:#00d4ff">$720</div></div>
+                    <div class="price-box target"><div class="label">分析師平均目標價</div><div class="value" style="color:#4caf50">$844</div></div>
+                    <div class="price-box"><div class="label">最高目標價</div><div class="value">$1,144</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="tsla">
+            <h2>🚗 Tesla (TSLA)</h2>
+            <div class="stock-card">
+                <div class="stock-header">
+                    <div>
+                        <div class="stock-name">特斯拉</div>
+                        <div class="stock-ticker">TSLA</div>
+                    </div>
+                    <div class="stock-price">~$350</div>
+                </div>
+                <table class="data-table">
+                    <tr><th>業務</th><td>電動車、能源、自動駕駛、機器人</td><th>市值</th><td>~$1.1萬億</td></tr>
+                    <tr><th>本益比</th><td>~170倍</td><th>股息率</th><td>無</td></tr>
+                </table>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>✅ 賣點</h4>
+                        <ul>
+                            <li>電動車市場領導品牌</li>
+                            <li>垂直整合優勢 (電池、軟體)</li>
+                            <li>自動駕駛技術領先</li>
+                            <li>能源業務增長 (Solar, Powerwall)</li>
+                            <li>機器人 (Optimus) 長期潛力</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>⚠️ 隱憂</h4>
+                        <ul>
+                            <li>估值極高 (本益比170倍)</li>
+                            <li>電動車競爭加劇 (中國品牌)</li>
+                            <li>馬斯克爭議影響品牌形象</li>
+                            <li>自動駕駛進度落後預期</li>
+                            <li>利潤率持續下滑</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="target-price">
+                    <div class="price-box current"><div class="label">現價</div><div class="value" style="color:#00d4ff">$350</div></div>
+                    <div class="price-box target"><div class="label">分析師平均目標價</div><div class="value" style="color:#4caf50">$396</div></div>
+                    <div class="price-box"><div class="label">預測區間</div><div class="value">$330-600</div></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="disclaimer">
+            <strong>⚠️ 免責聲明</strong><br>
+            以上資料僅供參考，不構成投資建議。投資涉及風險，過去績效不代表未來表現。投資者應自行評估風險並尋求專業意見。
+        </div>
+
+        <footer>
+            <p>每日更新 · 專業美股分析</p>
+            <p>Last updated: 2026年2月22日</p>
+        </footer>
+    </div>
+</body>
+</html>
